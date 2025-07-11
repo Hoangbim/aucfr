@@ -1,0 +1,15 @@
+[Unit]
+Description=Auto update server IP service
+After=network.target
+
+[Service]
+User=hoangbim
+WorkingDirectory=/home/hoangbim/Workspace/update-cloudflare-record/target/release
+ExecStart=/home/hoangbim/Workspace/update-cloudflare-record/target/release/update-cloudflare-record
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

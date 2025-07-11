@@ -1,0 +1,50 @@
+services:
+  cloudflare-dns-updater:
+    image: cloudflare-dns-updater:latest
+    container_name: cloudflare-dns-updater
+    restart: unless-stopped
+    environment:
+      # Các biến môi trường cho ứng dụng
+      - SSH_PORT=${SSH_PORT:-2222}
+      - SSH_USER=${SSH_USER}
+      - SSH_HOST=${SSH_HOST}
+      - FAIL2BAN_MAX_RETRY=${FAIL2BAN_MAX_RETRY:-3}
+      - FAIL2BAN_BAN_TIME=${FAIL2BAN_BAN_TIME:-3600}
+      - CLOUDFLARE_TUNNEL_ID=${CLOUDFLARE_TUNNEL_ID}
+      - CLOUDFLARE_AUTH_KEY=${CLOUDFLARE_AUTH_KEY}
+      - CLOUDFLARE_DOMAIN=${CLOUDFLARE_DOMAIN}
+      - CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - DNS_RECORD_ID=${DNS_RECORD_ID}
+      - DNS_NAME=${DNS_NAME}
+    # Mount .env file nếu bạn muốn sử dụng file thay vì environment variables
+    volumes:
+      - ./.env:/app/.env:ro
+      # Mount logs directory nếu ứng dụng ghi log
+      - ./logs:/app/logs
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.5"
+        reservations:
+          memory: 64M
+          cpus: "0.1"
+    # Health check
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "update-cloudflare-record"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Labels for management
+    labels:
+      - "com.docker.compose.service=cloudflare-dns-updater"
+      - "maintainer=your-email@example.com"
+      - "version=0.1.0"
+
+# Volumes for persistent data (nếu cần)
+volumes:
+  logs:
+    driver: local
